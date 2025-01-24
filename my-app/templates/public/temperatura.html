@@ -1,0 +1,102 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Monitor de Temperatura 🌡️ | Sensor Data{% endblock %}
+
+{% block body %}
+<div class="card content_consignaciones" style="border-radius: 0px !important">
+  <section id="datosTemperatura">
+    <h2 class="text-center mt-5 mb-5">
+      Registro de Temperatura
+      <hr />
+    </h2>
+
+    <!-- Selección de ubicación -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <form method="GET" action="{{ url_for('temperatura') }}" class="form-inline">
+        <label for="ubicacion" class="mr-2">Seleccionar Ubicación:</label>
+        <select id="ubicacion" name="id_ubicacion" class="form-control mr-2">
+          <option value="" {% if not id_ubicacion_seleccionada %}selected{% endif %}>Todas las ubicaciones</option>
+          {% for ubicacion in ubicaciones %}
+          <option value="{{ ubicacion.id_ubicacion }}" 
+                  {% if id_ubicacion_seleccionada == ubicacion.id_ubicacion %}selected{% endif %}>
+            {{ ubicacion.nombre_ubicacion }}
+          </option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+      </form>
+    </div>
+
+    <!-- Tabla de datos -->
+    <div class="table-responsive text-nowrap">
+      <table class="table table-hover">
+        <thead>
+          <tr style="background-color: #ddd">
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Temperatura (°C)</th>
+            <th>Ubicación</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for registro in datos_temperatura %}
+          <tr>
+            <td>{{ registro.id_temperatura }}</td>
+            <td>{{ registro.fecha }}</td>
+            <td>{{ registro.temperatura }} °C</td>
+            <td>{{ registro.nombre_ubicacion }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="text-center">No se encontraron registros.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <nav aria-label="Paginación de temperatura">
+      <ul class="pagination justify-content-center mt-4">
+        {% if pagina_actual > 1 %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('temperatura', id_ubicacion=id_ubicacion_seleccionada, pagina=pagina_actual-1) }}">
+            Anterior
+          </a>
+        </li>
+        {% endif %}
+
+        {% if pagina_actual > 2 %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        {% endif %}
+
+        {% for pagina in range(pagina_actual - 1, pagina_actual + 2) %}
+          {% if pagina > 0 and pagina <= total_paginas %}
+          <li class="page-item {% if pagina == pagina_actual %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('temperatura', id_ubicacion=id_ubicacion_seleccionada, pagina=pagina) }}">
+              {{ pagina }}
+            </a>
+          </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if pagina_actual < total_paginas - 2 %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        {% endif %}
+
+        {% if pagina_actual < total_paginas %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('temperatura', id_ubicacion=id_ubicacion_seleccionada, pagina=pagina_actual+1) }}">
+            Siguiente
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </section>
+</div>
+{% endblock %}
